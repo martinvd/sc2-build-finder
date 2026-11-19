@@ -1,4 +1,4 @@
-# sc2-build-optimizer
+# sc2-build-finder
 
 Finds the fastest StarCraft II build order to reach a goal, for Zerg, Terran and Protoss.
 The same binary runs as a desktop app or as a command-line tool.
