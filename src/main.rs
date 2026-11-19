@@ -17,8 +17,8 @@ use table::{Align, Table};
 const USAGE: &str = "\
 Find the fastest StarCraft II build order to reach a goal.
 
-Usage: sc2-build-optimizer [options] <goal>
-       sc2-build-optimizer      (no arguments opens the app)
+Usage: sc2-build-finder [options] <goal>
+       sc2-build-finder      (no arguments opens the app)
 
 Goal examples:
   \"5 roaches\"
