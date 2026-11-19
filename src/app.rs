@@ -68,13 +68,13 @@ pub fn run() {
             window_bounds: Some(WindowBounds::Windowed(Bounds::centered(None, size(px(1320.), px(860.)), cx))),
             ..TitleBar::window_options()
         };
-        gpui_kit::open_window(options, cx, |window, cx| cx.new(|cx| BuildOptimizer::new(window, cx)))
+        gpui_kit::open_window(options, cx, |window, cx| cx.new(|cx| BuildFinder::new(window, cx)))
             .expect("failed to open window");
         cx.activate(true);
     });
 }
 
-actions!(sc2_build_optimizer, [Quit]);
+actions!(sc2_build_finder, [Quit]);
 
 fn kind_color(kind: Kind, cx: &App) -> Hsla {
     let c = &cx.theme().colors;
@@ -99,7 +99,7 @@ struct Running {
     started: Instant,
 }
 
-struct BuildOptimizer {
+struct BuildFinder {
     input: Entity<InputState>,
     /// The race the palette and presets show. It follows the goal, and
     /// decides names any race could mean, like "gas".
@@ -116,7 +116,7 @@ struct BuildOptimizer {
     show_bank: bool,
 }
 
-impl BuildOptimizer {
+impl BuildFinder {
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let first = presets(Race::Zerg)[0];
         let input = cx.new(|cx| InputState::new(window, cx).placeholder("e.g. 8 roaches and glial").default_value(first));
@@ -129,7 +129,7 @@ impl BuildOptimizer {
             _ => {}
         })
         .detach();
-        BuildOptimizer {
+        BuildFinder {
             input,
             race: Race::Zerg,
             goal: plan::parse_goal(first, Race::Zerg),
@@ -244,7 +244,7 @@ impl BuildOptimizer {
     }
 }
 
-impl Render for BuildOptimizer {
+impl Render for BuildFinder {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let theme = cx.theme();
         v_flex()
@@ -265,7 +265,7 @@ impl Render for BuildOptimizer {
 }
 
 // Sidebar: goal, unit palette and model settings.
-impl BuildOptimizer {
+impl BuildFinder {
     fn render_title_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let dark = cx.theme().is_dark();
         TitleBar::new().child(
@@ -277,7 +277,7 @@ impl BuildOptimizer {
                     h_flex()
                         .gap_2()
                         .child(logo(self.race, cx))
-                        .child(div().text_sm().font_semibold().child("Build Optimizer"))
+                        .child(div().text_sm().font_semibold().child("Build Finder"))
                         .child(
                             div()
                                 .text_xs()
@@ -567,7 +567,7 @@ impl BuildOptimizer {
 }
 
 // Main area: progress, results and the timeline.
-impl BuildOptimizer {
+impl BuildFinder {
     fn render_main(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let content = if let Some(running) = &self.running {
             self.render_searching(running, cx).into_any_element()
@@ -576,7 +576,7 @@ impl BuildOptimizer {
                 None => empty_state(
                     IconName::Map,
                     "Pick a goal",
-                    "Build Optimizer searches every build order the model allows and shows the fastest one.",
+                    "Build Finder searches every build order the model allows and shows the fastest one.",
                     cx,
                 )
                 .into_any_element(),
@@ -854,7 +854,7 @@ impl BuildOptimizer {
     }
 }
 
-impl BuildOptimizer {
+impl BuildFinder {
     /// Minerals and gas banked over the build, on the timeline's time axis.
     /// Hovering an action shows what was banked when it started.
     fn render_bank(&self, build: &Build, grid: &impl Fn() -> Div, cx: &App) -> impl IntoElement {
@@ -1041,8 +1041,8 @@ fn stepper(
     value: String,
     can_dec: bool,
     can_inc: bool,
-    change: impl Fn(&mut BuildOptimizer, i32) + Clone + 'static,
-    cx: &mut Context<BuildOptimizer>,
+    change: impl Fn(&mut BuildFinder, i32) + Clone + 'static,
+    cx: &mut Context<BuildFinder>,
 ) -> impl IntoElement {
     let dec = change.clone();
     h_flex()
@@ -1101,7 +1101,7 @@ fn count_stepper(
     min: u16,
     max: u16,
     field: fn(&mut Config) -> &mut u16,
-    cx: &mut Context<BuildOptimizer>,
+    cx: &mut Context<BuildFinder>,
 ) -> impl IntoElement {
     stepper(
         id,
